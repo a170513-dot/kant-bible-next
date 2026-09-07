@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<defs>
+  <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f8efd9"/><stop offset="1" stop-color="#e6d1a3"/></linearGradient>
+  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" seed="9" result="noise"/><feColorMatrix in="noise" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .08 0"/></filter>
+  <style>.land{fill:#d7c18f;stroke:#8f7143;stroke-width:2;opacity:.65}.route{fill:none;stroke:#8d4c34;stroke-width:4;stroke-dasharray:12 11;opacity:.58}.water{fill:#9fb8b0;opacity:.26}.label{font-family:serif;font-size:24px;fill:#5e4a32;opacity:.82}.city{fill:#7a3f2c}.small{font-size:18px;opacity:.66}</style>
+</defs>
+<rect width="1600" height="900" fill="url(#paper)"/><rect width="1600" height="900" filter="url(#grain)" opacity=".9"/>
+<path class="water" d="M780 0 C710 150 680 250 690 360 C710 520 620 660 470 900 L1600 900 L1600 0Z"/>
+<path class="land" d="M610 128 C710 104 780 148 824 218 C850 260 823 313 774 345 C730 374 731 424 753 465 C784 520 748 594 691 617 C626 644 590 596 559 538 C520 466 472 408 438 350 C402 288 439 208 506 170Z"/>
+<path class="land" d="M893 142 C1010 110 1164 127 1260 188 C1338 238 1362 306 1310 354 C1248 412 1168 394 1091 414 C1000 438 930 492 871 535 C829 567 782 538 790 494 C802 424 839 384 860 327 C881 269 846 214 893 142Z"/>
+<path class="land" d="M446 500 C520 472 578 501 603 559 C630 620 593 674 537 713 C470 760 367 776 298 724 C240 681 242 612 295 565 C337 528 390 521 446 500Z"/>
+<path class="route" d="M384 634 C470 570 548 520 618 443 C689 363 756 335 849 320 C972 300 1092 326 1180 280"/>
+<path class="route" d="M692 447 C731 512 803 557 883 584 C990 620 1092 613 1194 654"/>
+<circle class="city" cx="391" cy="632" r="8"/><text class="label small" x="409" y="638">애굽</text>
+<circle class="city" cx="630" cy="443" r="8"/><text class="label small" x="648" y="449">예루살렘</text>
+<circle class="city" cx="654" cy="380" r="7"/><text class="label small" x="672" y="385">갈릴리</text>
+<circle class="city" cx="874" cy="319" r="8"/><text class="label small" x="892" y="325">소아시아</text>
+<circle class="city" cx="1181" cy="279" r="9"/><text class="label small" x="1200" y="285">로마</text>
+<circle class="city" cx="875" cy="583" r="8"/><text class="label small" x="894" y="590">바벨론</text>
+<text class="label" x="948" y="500">지중해 세계</text>
+<g opacity=".38" transform="translate(1260 560)"><circle cx="0" cy="0" r="95" fill="none" stroke="#6b5335" stroke-width="2"/><circle cx="0" cy="0" r="70" fill="none" stroke="#6b5335"/><path d="M0 -90 L18 -18 L88 0 L18 18 L0 90 L-18 18 L-88 0 L-18 -18Z" fill="#9d7b37"/><text x="-14" y="-108" class="label small">N</text></g>
+<g opacity=".42" transform="translate(135 115)"><path d="M0 0 h210 v120 h-210z" fill="none" stroke="#7a3f2c" stroke-width="2"/><path d="M25 28 h160 M25 56 h135 M25 84 h170" stroke="#7a3f2c" stroke-width="3"/><circle cx="0" cy="0" r="16" fill="#9d7b37"/><circle cx="210" cy="120" r="16" fill="#9d7b37"/></g>
+</svg>
