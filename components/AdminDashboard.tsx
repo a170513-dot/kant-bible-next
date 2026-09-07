@@ -37,11 +37,31 @@ export function AdminDashboard(){
   const [uploadProgress,setUploadProgress]=useState(0);
   const [uploadMessage,setUploadMessage]=useState("");
 
+  // 관리자 확인은 첫 진입 때만 로딩 화면을 사용합니다.
+  // 토큰 갱신 같은 인증 이벤트마다 checking=true로 되돌리면
+  // 화면 전체가 "확인 중" ↔ "콘텐츠 관리"로 반복 교체되어 스크롤이 튈 수 있습니다.
   const checkAdmin=useCallback(async(activeSession:Session|null)=>{
-    setChecking(true);setSession(activeSession);
-    if(!activeSession?.user?.email){setIsAdmin(false);setChecking(false);return;}
-    const {data,error}=await supabase.from("admins").select("email").eq("email",activeSession.user.email).maybeSingle();
-    setIsAdmin(Boolean(data&&!error));setChecking(false);
+    setSession(activeSession);
+
+    if(!activeSession?.user?.email){
+      setIsAdmin(false);
+      setChecking(false);
+      return;
+    }
+
+    try{
+      const {data,error}=await supabase
+        .from("admins")
+        .select("email")
+        .eq("email",activeSession.user.email)
+        .maybeSingle();
+
+      setIsAdmin(Boolean(data&&!error));
+    }catch{
+      setIsAdmin(false);
+    }finally{
+      setChecking(false);
+    }
   },[supabase]);
 
   const loadAdminData=useCallback(async()=>{
@@ -59,12 +79,41 @@ export function AdminDashboard(){
   },[isAdmin,supabase]);
 
   useEffect(()=>{
-    supabase.auth.getSession().then(({data})=>checkAdmin(data.session));
+    let cancelled=false;
+
+    supabase.auth.getSession().then(({data})=>{
+      if(!cancelled)void checkAdmin(data.session);
+    }).catch(()=>{
+      if(!cancelled){
+        setSession(null);
+        setIsAdmin(false);
+        setChecking(false);
+      }
+    });
+
     const {data:listener}=supabase.auth.onAuthStateChange((event,newSession)=>{
       if(event==="PASSWORD_RECOVERY")setRecoveryMode(true);
-      setTimeout(()=>checkAdmin(newSession),0);
+
+      if(event==="SIGNED_OUT"){
+        setSession(null);
+        setIsAdmin(false);
+        setChecking(false);
+        return;
+      }
+
+      // INITIAL_SESSION과 TOKEN_REFRESHED는 getSession 또는 기존 상태로 충분합니다.
+      // 여기서 다시 전체 관리자 확인 화면을 띄우지 않습니다.
+      if(event==="SIGNED_IN"||event==="USER_UPDATED"||event==="PASSWORD_RECOVERY"){
+        setTimeout(()=>{
+          if(!cancelled)void checkAdmin(newSession);
+        },0);
+      }
     });
-    return()=>listener.subscription.unsubscribe();
+
+    return()=>{
+      cancelled=true;
+      listener.subscription.unsubscribe();
+    };
   },[checkAdmin,supabase]);
 
   useEffect(()=>{loadAdminData();},[loadAdminData]);
