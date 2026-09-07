@@ -3,11 +3,15 @@ import { ContextInfographic } from "@/components/ContextInfographic";
 import { LectureList,type LectureItem } from "@/components/LectureList";
 import { ShareBoard } from "@/components/ShareBoard";
 import { BookResourceSection } from "@/components/BookResourceSection";
-import { getBook } from "@/lib/books";
+import { BOOKS,getBook } from "@/lib/books";
 import { getBookContext } from "@/lib/book-context";
 import { createPublicClient } from "@/lib/supabase-public";
 
-export const dynamic="force-dynamic";
+export const revalidate=60;
+
+export function generateStaticParams(){
+  return BOOKS.map(book=>({slug:book.slug}));
+}
 
 export default async function BibleBookPage({params}:{params:Promise<{slug:string}>}){
   const {slug}=await params;
@@ -32,7 +36,6 @@ export default async function BibleBookPage({params}:{params:Promise<{slug:strin
     </section>
 
     <BookResourceSection bookSlug={book.slug} section="overview"/>
-
     <BookResourceSection bookSlug={book.slug} section="structure"/>
 
     <section className="page-section">

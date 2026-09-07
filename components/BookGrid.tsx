@@ -29,7 +29,12 @@ export function BookGrid({books,boardMode=false}:{books:BibleBook[];boardMode?:b
       </div>
       <div className="book-grid">
         {filtered.map((book,index)=>(
-          <Link href={boardMode?`/bible/${book.slug}#sharing`:`/bible/${book.slug}`} className="book-card" key={book.slug}>
+          <Link
+            prefetch={true}
+            href={boardMode?`/bible/${book.slug}#sharing`:`/bible/${book.slug}`}
+            className="book-card"
+            key={book.slug}
+          >
             <span className="book-index">{String(index+1).padStart(2,"0")}</span>
             <div>
               <small>{book.testament==="OT"?"구약":"신약"} · {book.category}</small>
