@@ -1,15 +1,30 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 
 export const metadata:Metadata={
-  title:{default:"KANT BIBLE",template:"%s · KANT BIBLE"},
-  description:"성경 66권 강의안, 문화·지리 인포그래픽, 책별 나눔 게시판"
+  title:{default:"Kant Bible",template:"%s · Kant Bible"},
+  description:"성경 66권 강의안, 역사·문화·지리, 본문 연구와 책별 나눔 아카이브"
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}){
   return <html lang="ko"><body>
-    <SiteHeader/>{children}
-    <footer className="site-footer"><strong>KANT BIBLE</strong><span>성경 · 역사 · 문화 · 지리 · 나눔</span></footer>
+    <SiteHeader/>
+    {children}
+    <footer className="site-footer">
+      <div className="footer-inner">
+        <div className="footer-brand">
+          <strong>Kant Bible</strong>
+          <span>Scripture for a Deeper Life</span>
+        </div>
+        <nav className="footer-nav" aria-label="하단 메뉴">
+          <Link href="/#library">성경 66권</Link>
+          <Link href="/board">나눔 게시판</Link>
+          <Link href="/admin">관리자</Link>
+        </nav>
+        <p>말씀을 더 깊이, 세상을 더 넓게.</p>
+      </div>
+    </footer>
   </body></html>;
 }
