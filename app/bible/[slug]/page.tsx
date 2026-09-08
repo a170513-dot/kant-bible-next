@@ -1,11 +1,10 @@
 import { notFound } from "next/navigation";
 import { ContextInfographic } from "@/components/ContextInfographic";
-import { LectureList,type LectureItem } from "@/components/LectureList";
+import { LiveLectureList } from "@/components/LiveLectureList";
 import { ShareBoard } from "@/components/ShareBoard";
 import { BookResourceSection } from "@/components/BookResourceSection";
 import { BOOKS,getBook } from "@/lib/books";
 import { getBookContext } from "@/lib/book-context";
-import { createPublicClient } from "@/lib/supabase-public";
 
 export const revalidate=60;
 
@@ -18,13 +17,6 @@ export default async function BibleBookPage({params}:{params:Promise<{slug:strin
   const book=getBook(slug);
   if(!book)notFound();
   const context=getBookContext(book);
-  let lectures:LectureItem[]=[];
-  try{
-    const supabase=createPublicClient();
-    const {data}=await supabase.from("lectures").select("id,title,summary,updated_at,source_filename")
-      .eq("book_slug",slug).eq("is_published",true).order("updated_at",{ascending:false});
-    lectures=(data||[]) as LectureItem[];
-  }catch{lectures=[];}
 
   return <main className="book-page">
     <section className="book-hero">
@@ -51,9 +43,9 @@ export default async function BibleBookPage({params}:{params:Promise<{slug:strin
     <section className="page-section" id="lectures">
       <div className="section-heading">
         <div><div className="section-kicker">LECTURES</div><h2>강의안</h2></div>
-        <p>강의안은 별도 전체화면 뷰어에서 넓고 편안하게 읽을 수 있습니다.</p>
+        <p>공개 강의안은 자동으로 새로 확인되며 별도 전체화면 뷰어에서 편안하게 읽을 수 있습니다.</p>
       </div>
-      <LectureList lectures={lectures}/>
+      <LiveLectureList bookSlug={book.slug}/>
     </section>
 
     <BookResourceSection bookSlug={book.slug} section="research"/>
