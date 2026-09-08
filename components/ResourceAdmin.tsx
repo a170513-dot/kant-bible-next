@@ -32,11 +32,18 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "";
 
 function safeFileName(name: string) {
-  return name
-    .normalize("NFKC")
-    .replace(/[^\p{L}\p{N}._-]+/gu, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 120);
+  const dot = name.lastIndexOf(".");
+  const ext = (dot >= 0 ? name.slice(dot + 1) : "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")
+    .slice(0, 10);
+
+  const id =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2);
+
+  return `resource-${id}${ext ? `.${ext}` : ""}`;
 }
 
 export function ResourceAdmin({ session }: { session: Session }) {
@@ -134,6 +141,7 @@ export function ResourceAdmin({ session }: { session: Session }) {
     let fileSize: number | null = null;
 
     if (contentType === "file" && file instanceof File) {
+      // 한글 원본 파일명은 DB에 그대로 보존하고 Storage 경로만 ASCII 안전 이름을 씁니다.
       storagePath = `${bookSlug}/${section}/${Date.now()}-${safeFileName(file.name)}`;
       sourceFilename = file.name;
       mimeType = file.type || "application/octet-stream";

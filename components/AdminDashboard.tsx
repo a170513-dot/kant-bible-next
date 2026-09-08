@@ -19,7 +19,12 @@ const url=process.env.NEXT_PUBLIC_SUPABASE_URL||"";
 const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||"";
 
 function safeFileName(name:string){
-  return name.normalize("NFKC").replace(/[^\p{L}\p{N}._-]+/gu,"-").replace(/-+/g,"-").slice(0,120);
+  const lower=name.toLowerCase();
+  const ext=lower.endsWith(".htm")?"htm":"html";
+  const id=typeof crypto!=="undefined"&&"randomUUID" in crypto
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2);
+  return `lecture-${id}.${ext}`;
 }
 
 export function AdminDashboard(){
@@ -156,6 +161,9 @@ export function AdminDashboard(){
     if(!bookSlug||!title)return setUploadMessage("성경책과 제목을 입력하세요.");
 
     setUploadMessage("업로드를 준비하고 있습니다…");setUploadProgress(0);
+
+    // 사용자가 선택한 한글 파일명은 source_filename에 그대로 보존하고,
+    // Supabase Storage에는 ASCII 안전 이름만 사용합니다.
     const objectName=`${bookSlug}/${Date.now()}-${safeFileName(file.name)}`;
 
     try{
