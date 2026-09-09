@@ -2,8 +2,8 @@ import Link from "next/link";
 
 const navItems=[
   {href:"/#library",label:"성경 66권"},
-  {href:"/#library",label:"공개 강의안"},
-  {href:"/#library",label:"본문 연구"},
+  {href:"/bible/intertestamental",label:"신구약중간사"},
+  {href:"/qt",label:"매일성경 QT"},
   {href:"/board",label:"나눔 게시판"},
   {href:"/admin",label:"관리자"},
 ];

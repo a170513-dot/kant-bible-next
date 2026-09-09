@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BookGrid } from "@/components/BookGrid";
-import { BOOKS } from "@/lib/books";
+import { BOOKS,INTERTESTAMENTAL_STUDY } from "@/lib/books";
 
 const features=[
   {icon:"▣",title:"개관",text:"저자·연대·수신자와 시대적 배경을 한눈에",href:"#library"},
@@ -10,6 +10,7 @@ const features=[
   {icon:"◈",title:"성경 문화",text:"당시 사람들의 삶과 문화적 배경을 생생하게",href:"#library"},
   {icon:"⌖",title:"성경 지리",text:"고대 근동과 지중해 세계를 장소와 이동으로",href:"#library"},
   {icon:"☷",title:"나눔 게시판",text:"책별로 질문하고 함께 배우며 나누는 공간",href:"/board"},
+  {icon:"☀",title:"매일성경 본문 QT",text:"오늘의 본문을 묵상하고 적용을 함께 나누는 열린 공간",href:"/qt"},
 ];
 
 export default function HomePage(){
@@ -25,7 +26,7 @@ export default function HomePage(){
         </p>
         <div className="hero-actions">
           <Link className="primary-button hero-button" href="#library">성경 66권 둘러보기 <span>→</span></Link>
-          <Link className="secondary-button hero-button" href="/board">나눔 게시판</Link>
+          <Link className="secondary-button hero-button" href="/qt">오늘의 QT 나누기</Link>
         </div>
         <div className="hero-stats" aria-label="성경 구성">
           <div><strong>39</strong><span>구약</span></div>
@@ -64,10 +65,22 @@ export default function HomePage(){
       <div className="section-heading">
         <div>
           <div className="section-kicker">LIBRARY</div>
-          <h2>성경 66권</h2>
+          <h2>성경 66권 + 신구약중간사</h2>
         </div>
-        <p>성경책을 선택하면 개관, 구조와 흐름, 강의안, 본문 연구와 나눔 게시판을 한 페이지에서 읽을 수 있습니다.</p>
+        <p>성경책과 신구약중간사를 선택하면 개관, 구조와 흐름, 강의안, 본문 연구와 나눔을 한 페이지에서 읽을 수 있습니다.</p>
       </div>
+
+      <div className="book-grid" style={{marginBottom:"18px"}}>
+        <Link prefetch={true} href={`/bible/${INTERTESTAMENTAL_STUDY.slug}`} className="book-card">
+          <span className="book-index">SPECIAL STUDY</span>
+          <div>
+            <small>성경 배경사 · {INTERTESTAMENTAL_STUDY.category}</small>
+            <strong>{INTERTESTAMENTAL_STUDY.nameKo}</strong>
+          </div>
+          <span className="book-arrow">↗</span>
+        </Link>
+      </div>
+
       <BookGrid books={BOOKS}/>
     </section>
 

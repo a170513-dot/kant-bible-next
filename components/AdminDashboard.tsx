@@ -3,7 +3,7 @@
 import { FormEvent,useCallback,useEffect,useMemo,useState } from "react";
 import { createClient,type Session } from "@supabase/supabase-js";
 import * as tus from "tus-js-client";
-import { BOOKS } from "@/lib/books";
+import { CONTENT_BOOKS,bookGroupLabel } from "@/lib/books";
 import { ResourceAdmin } from "@/components/ResourceAdmin";
 
 type Lecture={
@@ -12,6 +12,10 @@ type Lecture={
 };
 type ModerationPost={
   id:number;book_slug:string;nickname:string;title:string;content:string;
+  status:"visible"|"hidden";created_at:string;
+};
+type QtModerationPost={
+  id:number;qt_date:string;passage:string;nickname:string;title:string;content:string;
   status:"visible"|"hidden";created_at:string;
 };
 
@@ -38,7 +42,8 @@ export function AdminDashboard(){
   const [authMessage,setAuthMessage]=useState("");
   const [lectures,setLectures]=useState<Lecture[]>([]);
   const [posts,setPosts]=useState<ModerationPost[]>([]);
-  const [tab,setTab]=useState<"lectures"|"resources"|"posts">("lectures");
+  const [qtPosts,setQtPosts]=useState<QtModerationPost[]>([]);
+  const [tab,setTab]=useState<"lectures"|"resources"|"posts"|"qt">("lectures");
   const [uploadProgress,setUploadProgress]=useState(0);
   const [uploadMessage,setUploadMessage]=useState("");
 
@@ -71,16 +76,20 @@ export function AdminDashboard(){
 
   const loadAdminData=useCallback(async()=>{
     if(!isAdmin)return;
-    const [lectureResult,postResult]=await Promise.all([
+    const [lectureResult,postResult,qtResult]=await Promise.all([
       supabase.from("lectures")
         .select("id,book_slug,title,summary,is_published,source_filename,storage_path,file_size,updated_at")
         .order("updated_at",{ascending:false}),
       supabase.from("posts")
         .select("id,book_slug,nickname,title,content,status,created_at")
-        .order("created_at",{ascending:false}).limit(100)
+        .order("created_at",{ascending:false}).limit(100),
+      supabase.from("qt_posts")
+        .select("id,qt_date,passage,nickname,title,content,status,created_at")
+        .order("qt_date",{ascending:false}).order("created_at",{ascending:false}).limit(100)
     ]);
     if(!lectureResult.error)setLectures((lectureResult.data||[]) as Lecture[]);
     if(!postResult.error)setPosts((postResult.data||[]) as ModerationPost[]);
+    if(!qtResult.error)setQtPosts((qtResult.data||[]) as QtModerationPost[]);
   },[isAdmin,supabase]);
 
   useEffect(()=>{
@@ -141,7 +150,7 @@ export function AdminDashboard(){
     setRecoveryMode(false);setPassword("");setAuthMessage("비밀번호를 변경했습니다.");
   }
   async function signOut(){
-    await supabase.auth.signOut();setLectures([]);setPosts([]);
+    await supabase.auth.signOut();setLectures([]);setPosts([]);setQtPosts([]);
   }
 
   async function uploadLecture(event:FormEvent<HTMLFormElement>){
@@ -226,6 +235,16 @@ export function AdminDashboard(){
     const {error}=await supabase.from("posts").delete().eq("id",post.id);
     if(!error)await loadAdminData();
   }
+  async function changeQtStatus(post:QtModerationPost){
+    const next=post.status==="visible"?"hidden":"visible";
+    const {error}=await supabase.from("qt_posts").update({status:next}).eq("id",post.id);
+    if(!error)await loadAdminData();
+  }
+  async function deleteQtPost(post:QtModerationPost){
+    if(!window.confirm(`"${post.title}" QT 글을 완전히 삭제할까요?`))return;
+    const {error}=await supabase.from("qt_posts").delete().eq("id",post.id);
+    if(!error)await loadAdminData();
+  }
 
   if(!url||!key)return <div className="admin-card">Supabase 환경변수가 없습니다.</div>;
   if(checking)return <div className="admin-card">관리자 상태를 확인하는 중입니다…</div>;
@@ -270,13 +289,14 @@ export function AdminDashboard(){
         <button className={tab==="lectures"?"active":""} onClick={()=>setTab("lectures")} type="button">강의안</button>
         <button className={tab==="resources"?"active":""} onClick={()=>setTab("resources")} type="button">책별 자료</button>
         <button className={tab==="posts"?"active":""} onClick={()=>setTab("posts")} type="button">게시판 관리</button>
+        <button className={tab==="qt"?"active":""} onClick={()=>setTab("qt")} type="button">QT 관리</button>
       </div>
 
       {tab==="resources" ? <ResourceAdmin session={session}/> : tab==="lectures"?<>
         <form className="admin-card" onSubmit={uploadLecture}>
           <div className="section-kicker">UPLOAD · MAX 50MB</div><h2>HTML 강의안 업로드</h2>
           <div className="form-grid">
-            <label>성경책<select name="bookSlug" required>{BOOKS.map(book=><option key={book.slug} value={book.slug}>{book.testament==="OT"?"구약":"신약"} · {book.nameKo}</option>)}</select></label>
+            <label>성경책 / 신구약중간사<select name="bookSlug" required>{CONTENT_BOOKS.map(book=><option key={book.slug} value={book.slug}>{bookGroupLabel(book)} · {book.nameKo}</option>)}</select></label>
             <label>HTML 파일<input name="file" type="file" accept=".html,.htm,text/html" required/></label>
           </div>
           <label>강의 제목<input name="title" maxLength={120} required/></label>
@@ -302,7 +322,7 @@ export function AdminDashboard(){
             </article>)}
           </div>
         </section>
-      </>:(
+      </>:tab==="posts"?(
         <section className="admin-card">
           <div className="admin-section-heading"><h2>나눔 게시판 관리</h2><button className="ghost-button" type="button" onClick={loadAdminData}>새로고침</button></div>
           <div className="manager-list">
@@ -312,6 +332,20 @@ export function AdminDashboard(){
                 <span className={`status-pill ${post.status}`}>{post.status==="visible"?"공개":"숨김"}</span>
                 <button className="ghost-button" type="button" onClick={()=>changePostStatus(post)}>{post.status==="visible"?"숨기기":"다시 공개"}</button>
                 <button className="danger-button" type="button" onClick={()=>deletePost(post)}>삭제</button>
+              </div>
+            </article>)}
+          </div>
+        </section>
+      ):(
+        <section className="admin-card">
+          <div className="admin-section-heading"><h2>매일성경 QT 관리</h2><button className="ghost-button" type="button" onClick={loadAdminData}>새로고침</button></div>
+          <div className="manager-list">
+            {qtPosts.map(post=><article className="manager-row" key={post.id}>
+              <div><small>{post.qt_date} · {post.passage} · {post.nickname}</small><strong>{post.title}</strong><span className="manager-preview">{post.content}</span></div>
+              <div className="manager-actions">
+                <span className={`status-pill ${post.status}`}>{post.status==="visible"?"공개":"숨김"}</span>
+                <button className="ghost-button" type="button" onClick={()=>changeQtStatus(post)}>{post.status==="visible"?"숨기기":"다시 공개"}</button>
+                <button className="danger-button" type="button" onClick={()=>deleteQtPost(post)}>삭제</button>
               </div>
             </article>)}
           </div>

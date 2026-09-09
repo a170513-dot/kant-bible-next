@@ -10,6 +10,11 @@ const cityBySlug: Record<string,string> = {
 };
 
 export function getBookContext(book:BibleBook) {
+  if(book.slug==="intertestamental")return {
+    era:"페르시아 후기·헬레니즘·하스몬 왕조·로마 초기",
+    geography:"유대·예루살렘·알렉산드리아·안디옥·지중해 세계",
+    culture:"제2성전기 유대교, 헬레니즘, 디아스포라, 종파와 묵시 전승"
+  };
   if (cityBySlug[book.slug]) return {
     era:"로마 제국기", geography:cityBySlug[book.slug],
     culture:book.category==="묵시문학" ? "제국 권력, 예배, 상징과 묵시 전승" : "도시 공동체, 가정교회, 유대·헬라 문화의 접점"

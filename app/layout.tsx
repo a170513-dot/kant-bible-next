@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 
 export const metadata:Metadata={
   title:{default:"Kant Bible",template:"%s · Kant Bible"},
-  description:"성경 66권 강의안, 역사·문화·지리, 본문 연구와 책별 나눔 아카이브"
+  description:"성경 66권과 신구약중간사 강의안, 역사·문화·지리, 본문 연구와 매일성경 QT 나눔 아카이브"
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}){
@@ -20,6 +20,8 @@ export default function RootLayout({children}:{children:React.ReactNode}){
         </div>
         <nav className="footer-nav" aria-label="하단 메뉴">
           <Link href="/#library">성경 66권</Link>
+          <Link href="/bible/intertestamental">신구약중간사</Link>
+          <Link href="/qt">매일성경 QT</Link>
           <Link href="/board">나눔 게시판</Link>
           <Link href="/admin">관리자</Link>
         </nav>

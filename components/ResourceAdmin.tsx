@@ -3,7 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { createClient, type Session } from "@supabase/supabase-js";
 import * as tus from "tus-js-client";
-import { BOOKS } from "@/lib/books";
+import { CONTENT_BOOKS,bookGroupLabel } from "@/lib/books";
 
 type SectionKey = "overview" | "structure" | "research";
 type ContentType = "text" | "file";
@@ -116,7 +116,7 @@ export function ResourceAdmin({ session }: { session: Session }) {
     const file = form.get("file");
 
     if (!bookSlug || !SECTION_LABELS[section] || !title) {
-      return setMessage("성경책, 영역, 제목을 확인하세요.");
+      return setMessage("자료 분류, 영역, 제목을 확인하세요.");
     }
 
     if (contentType === "text" && !bodyText) {
@@ -229,16 +229,16 @@ export function ResourceAdmin({ session }: { session: Session }) {
         <div className="section-kicker">BOOK CONTENT</div>
         <h2>개관 · 구조와 흐름 · 본문 연구 자료 올리기</h2>
         <p className="muted">
-          세 영역 모두 글을 직접 쓰거나 파일을 올릴 수 있습니다. 파일은 최대 50MB입니다.
+          성경 66권과 신구약중간사 모두 글을 직접 쓰거나 파일을 올릴 수 있습니다. 파일은 최대 50MB입니다.
         </p>
 
         <div className="form-grid">
           <label>
-            성경책
+            성경책 / 신구약중간사
             <select name="bookSlug" required>
-              {BOOKS.map((book) => (
+              {CONTENT_BOOKS.map((book) => (
                 <option key={book.slug} value={book.slug}>
-                  {book.testament === "OT" ? "구약" : "신약"} · {book.nameKo}
+                  {bookGroupLabel(book)} · {book.nameKo}
                 </option>
               ))}
             </select>

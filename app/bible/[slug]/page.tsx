@@ -3,13 +3,13 @@ import { ContextInfographic } from "@/components/ContextInfographic";
 import { LiveLectureList } from "@/components/LiveLectureList";
 import { ShareBoard } from "@/components/ShareBoard";
 import { BookResourceSection } from "@/components/BookResourceSection";
-import { BOOKS,getBook } from "@/lib/books";
+import { CONTENT_BOOKS,bookGroupLabel,getBook } from "@/lib/books";
 import { getBookContext } from "@/lib/book-context";
 
 export const revalidate=60;
 
 export function generateStaticParams(){
-  return BOOKS.map(book=>({slug:book.slug}));
+  return CONTENT_BOOKS.map(book=>({slug:book.slug}));
 }
 
 export default async function BibleBookPage({params}:{params:Promise<{slug:string}>}){
@@ -17,14 +17,17 @@ export default async function BibleBookPage({params}:{params:Promise<{slug:strin
   const book=getBook(slug);
   if(!book)notFound();
   const context=getBookContext(book);
+  const isIntertestamental=book.slug==="intertestamental";
 
   return <main className="book-page">
     <section className="book-hero">
       <div className="book-hero-art" aria-hidden="true"/>
       <div className="book-hero-content">
-        <div className="breadcrumb">{book.testament==="OT"?"구약":"신약"} · {book.category}</div>
+        <div className="breadcrumb">{bookGroupLabel(book)} · {book.category}</div>
         <h1>{book.nameKo}</h1>
-        <p>본문을 역사와 문화, 지리의 결 속에서 읽고 강의안과 공동체 나눔을 함께 모읍니다.</p>
+        <p>{isIntertestamental
+          ? "구약의 마지막 시기에서 신약의 세계가 형성되기까지, 제2성전기 유대교와 헬레니즘·로마 세계의 역사와 문화를 강의안과 자료로 함께 모읍니다."
+          : "본문을 역사와 문화, 지리의 결 속에서 읽고 강의안과 공동체 나눔을 함께 모읍니다."}</p>
         <ContextInfographic {...context}/>
       </div>
     </section>

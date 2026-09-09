@@ -1,7 +1,7 @@
 "use client";
 import { useMemo,useState } from "react";
 import Link from "next/link";
-import type { BibleBook,Testament } from "@/lib/books";
+import { bookGroupLabel, type BibleBook,type Testament } from "@/lib/books";
 
 export function BookGrid({books,boardMode=false}:{books:BibleBook[];boardMode?:boolean}){
   const [query,setQuery]=useState("");
@@ -37,7 +37,7 @@ export function BookGrid({books,boardMode=false}:{books:BibleBook[];boardMode?:b
           >
             <span className="book-index">{String(index+1).padStart(2,"0")}</span>
             <div>
-              <small>{book.testament==="OT"?"구약":"신약"} · {book.category}</small>
+              <small>{bookGroupLabel(book)} · {book.category}</small>
               <strong>{book.nameKo}</strong>
             </div>
             <span className="book-arrow">↗</span>
