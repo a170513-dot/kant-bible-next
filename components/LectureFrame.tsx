@@ -5,13 +5,16 @@ import { useEffect, useState } from "react";
 export function LectureFrame({
   signedUrl,
   legacyHtml,
+  mimeType,
   title,
 }: {
   signedUrl: string | null;
   legacyHtml: string | null;
+  mimeType: string | null;
   title: string;
 }) {
-  const [frameUrl, setFrameUrl] = useState<string | null>(null);
+  const isPdf = mimeType === "application/pdf";
+  const [frameUrl, setFrameUrl] = useState<string | null>(isPdf ? signedUrl : null);
   const [message, setMessage] = useState("강의안을 불러오는 중입니다…");
 
   useEffect(() => {
@@ -20,6 +23,15 @@ export function LectureFrame({
 
     async function prepare() {
       try {
+        if (isPdf) {
+          if (!signedUrl) throw new Error("PDF 파일이 없습니다.");
+          if (!cancelled) {
+            setFrameUrl(signedUrl);
+            setMessage("");
+          }
+          return;
+        }
+
         let html = legacyHtml || "";
 
         if (!html && signedUrl) {
@@ -40,8 +52,6 @@ export function LectureFrame({
           throw new Error("강의안 파일이 없습니다.");
         }
 
-        // Storage가 HTML을 다른 MIME 형식으로 전달하더라도 브라우저에서
-        // UTF-8 HTML 문서로 다시 만들어 원래 CSS/레이아웃을 그대로 렌더링합니다.
         const blob = new Blob([html], { type: "text/html;charset=utf-8" });
         objectUrl = URL.createObjectURL(blob);
 
@@ -64,7 +74,7 @@ export function LectureFrame({
       cancelled = true;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [signedUrl, legacyHtml]);
+  }, [signedUrl, legacyHtml, isPdf]);
 
   if (!frameUrl) {
     return (
@@ -87,7 +97,7 @@ export function LectureFrame({
       id="lectureFrame"
       className="lecture-screen"
       src={frameUrl}
-      sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
+      sandbox={isPdf ? undefined : "allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"}
       referrerPolicy="no-referrer"
       title={title}
     />

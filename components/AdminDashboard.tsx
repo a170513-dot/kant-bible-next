@@ -24,7 +24,7 @@ const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||"";
 
 function safeFileName(name:string){
   const lower=name.toLowerCase();
-  const ext=lower.endsWith(".htm")?"htm":"html";
+  const ext=lower.endsWith(".pdf")?"pdf":lower.endsWith(".htm")?"htm":"html";
   const id=typeof crypto!=="undefined"&&"randomUUID" in crypto
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2);
@@ -47,9 +47,6 @@ export function AdminDashboard(){
   const [uploadProgress,setUploadProgress]=useState(0);
   const [uploadMessage,setUploadMessage]=useState("");
 
-  // 관리자 확인은 첫 진입 때만 로딩 화면을 사용합니다.
-  // 토큰 갱신 같은 인증 이벤트마다 checking=true로 되돌리면
-  // 화면 전체가 "확인 중" ↔ "콘텐츠 관리"로 반복 교체되어 스크롤이 튈 수 있습니다.
   const checkAdmin=useCallback(async(activeSession:Session|null)=>{
     setSession(activeSession);
 
@@ -115,8 +112,6 @@ export function AdminDashboard(){
         return;
       }
 
-      // INITIAL_SESSION과 TOKEN_REFRESHED는 getSession 또는 기존 상태로 충분합니다.
-      // 여기서 다시 전체 관리자 확인 화면을 띄우지 않습니다.
       if(event==="SIGNED_IN"||event==="USER_UPDATED"||event==="PASSWORD_RECOVERY"){
         setTimeout(()=>{
           if(!cancelled)void checkAdmin(newSession);
@@ -164,15 +159,16 @@ export function AdminDashboard(){
     const summary=String(form.get("summary")||"").trim();
     const isPublished=form.get("isPublished")==="on";
 
-    if(!(file instanceof File)||!file.name)return setUploadMessage("HTML 파일을 선택하세요.");
-    if(!/\.html?$/i.test(file.name))return setUploadMessage("HTML 또는 HTM 파일만 업로드할 수 있습니다.");
+    if(!(file instanceof File)||!file.name)return setUploadMessage("강의안 파일을 선택하세요.");
+    if(!/\.(html?|pdf)$/i.test(file.name))return setUploadMessage("HTML, HTM 또는 PDF 파일만 업로드할 수 있습니다.");
     if(file.size>50*1024*1024)return setUploadMessage("파일은 최대 50MB까지 업로드할 수 있습니다.");
     if(!bookSlug||!title)return setUploadMessage("성경책과 제목을 입력하세요.");
 
+    const isPdf=/\.pdf$/i.test(file.name);
+    const mimeType=isPdf?"application/pdf":"text/html";
+
     setUploadMessage("업로드를 준비하고 있습니다…");setUploadProgress(0);
 
-    // 사용자가 선택한 한글 파일명은 source_filename에 그대로 보존하고,
-    // Supabase Storage에는 ASCII 안전 이름만 사용합니다.
     const objectName=`${bookSlug}/${Date.now()}-${safeFileName(file.name)}`;
 
     try{
@@ -183,7 +179,7 @@ export function AdminDashboard(){
           headers:{authorization:`Bearer ${session.access_token}`,apikey:key},
           uploadDataDuringCreation:true,removeFingerprintOnSuccess:true,
           chunkSize:6*1024*1024,
-          metadata:{bucketName:"lectures",objectName,contentType:"text/html",cacheControl:"3600"},
+          metadata:{bucketName:"lectures",objectName,contentType:mimeType,cacheControl:"3600"},
           onError(error){reject(error);},
           onProgress(done,total){setUploadProgress(Math.round((done/total)*100));},
           onSuccess(){resolve();}
@@ -196,7 +192,7 @@ export function AdminDashboard(){
 
     const {error}=await supabase.from("lectures").insert({
       book_slug:bookSlug,title,summary:summary||null,source_filename:file.name,
-      storage_path:objectName,file_size:file.size,mime_type:"text/html",
+      storage_path:objectName,file_size:file.size,mime_type:mimeType,
       content_html:null,is_published:isPublished,updated_at:new Date().toISOString()
     });
 
@@ -294,10 +290,10 @@ export function AdminDashboard(){
 
       {tab==="resources" ? <ResourceAdmin session={session}/> : tab==="lectures"?<>
         <form className="admin-card" onSubmit={uploadLecture}>
-          <div className="section-kicker">UPLOAD · MAX 50MB</div><h2>HTML 강의안 업로드</h2>
+          <div className="section-kicker">UPLOAD · HTML / PDF · MAX 50MB</div><h2>강의안 업로드</h2>
           <div className="form-grid">
             <label>성경책 / 신구약중간사<select name="bookSlug" required>{CONTENT_BOOKS.map(book=><option key={book.slug} value={book.slug}>{bookGroupLabel(book)} · {book.nameKo}</option>)}</select></label>
-            <label>HTML 파일<input name="file" type="file" accept=".html,.htm,text/html" required/></label>
+            <label>강의안 파일<input name="file" type="file" accept=".html,.htm,.pdf,text/html,application/pdf" required/></label>
           </div>
           <label>강의 제목<input name="title" maxLength={120} required/></label>
           <label>짧은 설명<textarea name="summary" rows={3} maxLength={500}/></label>

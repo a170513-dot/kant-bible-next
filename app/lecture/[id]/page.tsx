@@ -12,7 +12,7 @@ export default async function LectureViewerPage({params}:{params:Promise<{id:str
 
   const supabase=createServiceClient();
   const {data:lecture,error}=await supabase.from("lectures")
-    .select("id,book_slug,title,storage_path,content_html,is_published")
+    .select("id,book_slug,title,storage_path,content_html,mime_type,is_published")
     .eq("id",numericId).eq("is_published",true).maybeSingle();
 
   if(error||!lecture)notFound();
@@ -40,6 +40,7 @@ export default async function LectureViewerPage({params}:{params:Promise<{id:str
     <LectureFrame
       signedUrl={signedUrl}
       legacyHtml={lecture.content_html||null}
+      mimeType={lecture.mime_type||null}
       title={lecture.title}
     />
 
